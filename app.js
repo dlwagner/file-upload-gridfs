@@ -1,11 +1,15 @@
+const dotenv = require('dotenv');
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+var mongoose = require('mongoose');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+
+dotenv.config();
 
 var app = express();
 
@@ -17,6 +21,23 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+// Set up mongoose connection
+const mongoDB = process.env.DB_URL;
+
+mongoose.connect(mongoDB, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useCreateIndex: true,
+});
+mongoose.Promise = global.Promise;
+const db = mongoose.connection;
+db.on(
+  'error',
+  // eslint-disable-next-line no-console
+  console.error.bind(console, 'MongoDB connection error:')
+);
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
