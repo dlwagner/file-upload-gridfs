@@ -1,10 +1,10 @@
-var Issue = require('../models/issue');
-
-var async = require('async');
+const Issue = require('../models/issue');
+const async = require('async');
 
 const { body, validationResult } = require('express-validator');
 const { sanitizeBody } = require('express-validator');
 
+// Get Home Page
 exports.index = function(req, res) {
   async.parallel(
     {
@@ -14,7 +14,7 @@ exports.index = function(req, res) {
     },
     function(err, results) {
       res.render('index', {
-        title: 'Issues Home',
+        title: 'Home Page',
         error: err,
         data: results,
       });
@@ -22,23 +22,25 @@ exports.index = function(req, res) {
   );
 };
 
-// Display list of all issues.
+// All Issue Page: Display list of all issues.
 exports.issue_list = function(req, res, next) {
   Issue.find({}, 'title description').exec(function(err, list_issues) {
     if (err) {
       return next(err);
     }
     //Successful, so render
-    res.render('issue_list', { title: 'Issue List', issue_list: list_issues });
+    res.render('issue_list', { title: 'All Issues', issue_list: list_issues });
   });
 };
 
-// Display detail page for a specific issue.
-exports.issue_detail = function(req, res) {
+// Get detail page: Display detail page for a specific issue.
+exports.issue_detail = function(req, res, next) {
   async.parallel(
     {
       issue: function(callback) {
-        Issue.findById(req.params.id).exec(callback);
+        Issue.findById(req.params.id)
+          .populate('files')
+          .exec(callback);
       },
     },
     function(err, results) {
@@ -54,6 +56,7 @@ exports.issue_detail = function(req, res) {
       // Successful, so render.
       res.render('issue_detail', {
         issue: results.issue,
+        files: results.files,
       });
     }
   );
@@ -70,12 +73,12 @@ exports.issue_create_get = function(req, res, next) {
       if (err) {
         return next(err);
       }
-      res.render('issue-form', { title: 'Create Issue' });
+      res.render('issue-form', { title: 'Create New Issue' });
     }
   );
 };
 
-// Handle issue create on POST.
+// POST form data to DB. Handle issue create on POST.
 exports.issue_create_post = [
   // Validate fields.
   body('title', 'Title must not be empty.')
@@ -93,10 +96,16 @@ exports.issue_create_post = [
     // Extract the validation errors from a request.
     const errors = validationResult(req);
 
+    //console.log('req.body.file: ' + req.body.file);
+    //console.log('req.file._id: ' + req.file._id);
+    //console.log('req: ' + req);
+    // console.log('req: ' + req.binData);
+
     // Create an Issue object with escaped and trimmed data.
     var issue = new Issue({
       title: req.body.title,
       description: req.body.description,
+      //fileID: req.file._id,
     });
 
     if (!errors.isEmpty()) {
@@ -112,7 +121,7 @@ exports.issue_create_post = [
             return next(err);
           }
           res.render('issue-form', {
-            title: 'Create Issue',
+            title: 'Create New Issue',
             errors: errors.array(),
           });
         }

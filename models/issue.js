@@ -5,6 +5,7 @@ const { Schema } = mongoose;
 const IssueSchema = new Schema({
   title: { type: String, required: true, max: 100 },
   description: { type: String, required: true, max: 200 },
+  fileID: { type: [Schema.Types.ObjectId] },
 });
 
 // Virtual for book's URL
@@ -13,3 +14,4 @@ IssueSchema.virtual('url').get(function() {
 });
 
 module.exports = mongoose.model('Issue', IssueSchema);
+//module.exports = db.model('Issue', IssueSchema);

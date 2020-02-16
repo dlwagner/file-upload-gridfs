@@ -3,7 +3,13 @@ extends layout
 block content
   h1 Title: #{issue.title}
   
-  p #[strong Description:] #{issue.description} 
+  p #[strong Description:] #{issue.description}
+  //-p #[strong Files:] #{issue.fileID}
   
   div(style='margin-left:20px;margin-top:20px')
     h4 Attachments
+    each fileId in issue.fileID
+      li
+        a(href='') #{fileId}
+    else
+      p There are no attachments

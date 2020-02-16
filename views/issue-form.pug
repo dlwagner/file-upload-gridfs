@@ -3,15 +3,16 @@ extends layout
 block content
   h1= title
 
-  form(method='POST' action='')
+  form(method='POST' action='' enctype="multipart/form-data")
     div.form-group
       label(for='title') Title:
       input#title.form-control(type='text', placeholder='Name of Issue' name='title' required='true' value=(undefined===issue ? '' : issue.title) )
     div.form-group
       label(for='description') Description:
       textarea#description.form-control(type='textarea', placeholder='Description' name='description' rows='3' required='true') #{undefined===issue ? '' : issue.description}
-    div
-      input#filepond(type='file' name='filepond' class='filepond' data-max-files='10' multiple='' accept='image/*,.pdf,.doc,.docx,.txt')
+    .custom-file.mb-3
+      input#file.custom-file-input(type="file" name="file" multiple)
+      label.custom-file-label(for="file") Choose File (limit three)
     button.btn.btn-primary(type='submit') Submit
 
   if errors 
