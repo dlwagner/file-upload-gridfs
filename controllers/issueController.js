@@ -1,5 +1,9 @@
+const db = require('../db');
+const express = require('express');
+const mongoose = require('mongoose');
 const Issue = require('../models/issue');
 const async = require('async');
+let fileIds = [];
 
 const { body, validationResult } = require('express-validator');
 const { sanitizeBody } = require('express-validator');
@@ -9,7 +13,7 @@ exports.index = function(req, res) {
   async.parallel(
     {
       issue_count: function(callback) {
-        Issue.countDocuments({}, callback); // Pass an empty object as match condition to find all documents of this collection
+        Issue.countDocuments({}, callback);
       },
     },
     function(err, results) {
@@ -78,6 +82,53 @@ exports.issue_create_get = function(req, res, next) {
   );
 };
 
+exports.upload_files = function(req, res) {
+  if (req.files.length === 0) {
+    var issue = new Issue({
+      title: req.body.title,
+      description: req.body.description,
+    });
+  } else if (req.files.length === 1) {
+    var issue = new Issue({
+      title: req.body.title,
+      description: req.body.description,
+      fileID: req.files[0].id,
+    });
+  } else {
+    for (let i = 0; i < req.files.length; i++) {
+      fileIds[i] = req.files[i].id;
+      //console.log('req.files.id: ' + req.files[i].id);
+    }
+    var issue = new Issue({
+      title: req.body.title,
+      description: req.body.description,
+      fileID: fileIds,
+    });
+  }
+  issue.save();
+  res.redirect('/list/issues');
+};
+
+// Display image
+exports.file_display = function(req, res) {
+  db.gfs.grid.files.findOne(
+    { _id: mongoose.Types.ObjectId(req.params.id) },
+    (err, file) => {
+      //res.contentType(file.contentType);
+      // Check if file
+      if (!file || file.length === 0) {
+        return res.status(404).json({
+          err: 'No file exists',
+        });
+      }
+      const readstream = db.gfs.grid.createReadStream(file._id);
+      readstream.pipe(res);
+    }
+  );
+};
+
+// Keep this, I may need it later
+/*
 // POST form data to DB. Handle issue create on POST.
 exports.issue_create_post = [
   // Validate fields.
@@ -95,11 +146,6 @@ exports.issue_create_post = [
   (req, res, next) => {
     // Extract the validation errors from a request.
     const errors = validationResult(req);
-
-    //console.log('req.body.file: ' + req.body.file);
-    //console.log('req.file._id: ' + req.file._id);
-    //console.log('req: ' + req);
-    // console.log('req: ' + req.binData);
 
     // Create an Issue object with escaped and trimmed data.
     var issue = new Issue({
@@ -139,23 +185,4 @@ exports.issue_create_post = [
     }
   },
 ];
-
-// Display issue delete form on GET.
-exports.issue_delete_get = function(req, res) {
-  res.send('NOT IMPLEMENTED: Issue delete GET');
-};
-
-// Handle issue delete on POST.
-exports.issue_delete_post = function(req, res) {
-  res.send('NOT IMPLEMENTED: Issue delete POST');
-};
-
-// Display issue update form on GET.
-exports.issue_update_get = function(req, res) {
-  res.send('NOT IMPLEMENTED: Issue update GET');
-};
-
-// Handle issue update on POST.
-exports.issue_update_post = function(req, res) {
-  res.send('NOT IMPLEMENTED: Issue update POST');
-};
+*/

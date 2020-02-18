@@ -10,6 +10,6 @@ block content
     h4 Attachments
     each fileId in issue.fileID
       li
-        a(href='') #{fileId}
+        a(href="/list/issue/filedisplay/" + fileId target="_blank") #{fileId}
     else
       p There are no attachments

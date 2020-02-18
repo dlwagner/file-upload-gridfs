@@ -14,4 +14,3 @@ IssueSchema.virtual('url').get(function() {
 });
 
 module.exports = mongoose.model('Issue', IssueSchema);
-//module.exports = db.model('Issue', IssueSchema);

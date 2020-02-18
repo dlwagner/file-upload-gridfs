@@ -21,12 +21,17 @@ const conn = mongoose.connect(mongoDB, {
 mongoose.Promise = global.Promise;
 const dbInstance = mongoose.connection;
 
-let gfs;
+/*let gfs;
 
 dbInstance.once('open', () => {
   gfs = Grid(dbInstance.db, mongoose.mongo);
   gfs.collection('fileUploads');
-  //console.log('here: ' + gfs);
+});*/
+const gfs = { grid: undefined };
+
+dbInstance.once('open', () => {
+  gfs.grid = Grid(dbInstance.db, mongoose.mongo);
+  gfs.grid.collection('fileUploads');
 });
 
 const storage = new GridFsStorage({
@@ -47,10 +52,10 @@ const storage = new GridFsStorage({
   },
 });
 
-//const upload = multer({ storage });
 var upload = multer({ storage });
 
 module.exports = {
   dbInstance,
   upload,
+  gfs,
 };
