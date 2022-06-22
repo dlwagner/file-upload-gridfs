@@ -8,7 +8,7 @@
     "serverstart": "DEBUG=file-upload-gridfs:* npm run devstart"
   },
   "dependencies": {
-    "async": "^3.1.1",
+    "async": "^3.2.2",
     "body-parser": "^1.19.0",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
